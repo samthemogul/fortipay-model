@@ -1,3 +1,6 @@
-flask
+Flask
 opencv-python
+requests
+tensorflow
+joblib
 numpy
