@@ -2,18 +2,24 @@ import os
 import cv2
 import json
 import requests
+from dotenv import load_dotenv
 from flask import Flask, request, jsonify
 from collections import Counter
 from utils.video_processing import extract_first_frame
 
+load_dotenv()
+
+
 app = Flask(__name__)
 UPLOAD_FOLDER = "uploads"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+app.config["AZURE_PREDICTION_URL"] = os.getenv("AZURE_PREDICTION_URL")
+app.config["AZURE_PREDICTION_KEY"] = os.getenv("AZURE_PREDICTION_KEY")
 
 # Azure Custom Vision API
-AZURE_PREDICTION_URL = "https://fortipaycv-prediction.cognitiveservices.azure.com/customvision/v3.0/Prediction/0fc5b706-bd26-47d1-a160-aba180119288/detect/iterations/fortipay(model2)/image"
+AZURE_PREDICTION_URL = app.config["AZURE_PREDICTION_URL"]
 HEADERS = {
-    "Prediction-Key": "AHJulxK6iMtY8QBDJU1LiOsLG8P2CqZOtncbVtj7rajyURzdNndmJQQJ99BCACYeBjFXJ3w3AAAIACOGqVyd",
+    "Prediction-Key": app.config["AZURE_PREDICTION_KEY"],
     "Content-Type": "application/octet-stream"
 }
 
@@ -41,7 +47,6 @@ def get_product_tag(video_path, output_folder):
 
     # Extract product tag
     if prediction and "predictions" in prediction:
-        # retur the tagname of the prediction with the highest probability
         return max(prediction["predictions"], key=lambda x: x["probability"])["tagName"]
 
     return "Unknown"
